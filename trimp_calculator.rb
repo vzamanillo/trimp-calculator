@@ -28,6 +28,42 @@ class TRIMPCalculator
     trimp.round(2)
   end
 
+  # Classifies a TRIMP value into a training intensity range
+  # Returns a hash with :range and :interpretation
+  # Can be used as a class method: TRIMPCalculator.classify_trimp(value)
+  def self.classify_trimp(trimp_value)
+    case trimp_value
+    when 0...150
+      { range: "< 150", interpretation: "Very light training week" }
+    when 150...300
+      { range: "150-300", interpretation: "Light training week" }
+    when 300...500
+      { range: "300-500", interpretation: "Moderate training week" }
+    when 500...750
+      { range: "500-750", interpretation: "Hard training week" }
+    when 750...1000
+      { range: "750-1000", interpretation: "Very hard training week" }
+    else
+      { range: "> 1000", interpretation: "Extreme training week (recovery needed)" }
+    end
+  end
+
+  # Classifies a TRIMP value into a training phase
+  # Returns a hash with :phase, :range, and :description
+  # Can be used as a class method: TRIMPCalculator.classify_training_phase(value)
+  def self.classify_training_phase(trimp_value)
+    case trimp_value
+    when 0...300
+      { phase: "Recovery phase", range: "< 300", description: "Deliberate rest weeks" }
+    when 300...500
+      { phase: "Base phase", range: "300-500", description: "Steady, consistent training" }
+    when 500...750
+      { phase: "Build phase", range: "500-750", description: "Increased intensity and volume" }
+    else
+      { phase: "Peak phase", range: "750-1000+", description: "High intensity" }
+    end
+  end
+
   private
 
   def validate_inputs
@@ -55,6 +91,7 @@ if __FILE__ == $0
   
   calculator = TRIMPCalculator.new(duration, avg_hr, max_hr, resting_hr, gender)
   trimp = calculator.calculate
+  classification = TRIMPCalculator.classify_trimp(trimp)
   
   puts "Example 1 (Male):"
   puts "  Duration: #{duration} minutes"
@@ -63,11 +100,14 @@ if __FILE__ == $0
   puts "  Resting HR: #{resting_hr} bpm"
   puts "  Gender: #{gender}"
   puts "  TRIMP Score: #{trimp}"
+  puts "  Range: #{classification[:range]}"
+  puts "  Interpretation: #{classification[:interpretation]}"
   puts
   
   # Example 2: Female athlete
   calculator2 = TRIMPCalculator.new(45, 140, 195, 58, :female)
   trimp2 = calculator2.calculate
+  classification2 = TRIMPCalculator.classify_trimp(trimp2)
   
   puts "Example 2 (Female):"
   puts "  Duration: 45 minutes"
@@ -76,4 +116,15 @@ if __FILE__ == $0
   puts "  Resting HR: 58 bpm"
   puts "  Gender: female"
   puts "  TRIMP Score: #{trimp2}"
+  puts "  Range: #{classification2[:range]}"
+  puts "  Interpretation: #{classification2[:interpretation]}"
+  puts
+  
+  # Example 3: Testing with different TRIMP values
+  puts "Example 3 (Range Classification for various TRIMP values):"
+  test_values = [100, 200, 400, 600, 850, 1200]
+  test_values.each do |value|
+    classification = TRIMPCalculator.classify_trimp(value)
+    puts "  TRIMP #{value}: #{classification[:interpretation]}"
+  end
 end
