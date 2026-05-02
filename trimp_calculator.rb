@@ -3,11 +3,21 @@
 # TRIMP (Training Impulse) Calculator
 # TRIMP = Duration (minutes) × Average HR intensity factor × Gender factor
 # Intensity factor = (Average HR - Resting HR) / (Max HR - Resting HR)
+#
+# bTRIMP (Bannister's TRIMP) = Duration (minutes) × Intensity factor × e^(k × Intensity factor)
+# where k is typically 1.92 for males and 1.67 for females
+# Uses exponential weighting to emphasize high-intensity efforts
 
 class TRIMPCalculator
   GENDER_FACTORS = {
     male: 1.0,
     female: 0.86
+  }.freeze
+
+  # bTRIMP exponential coefficients (higher values = more weight on intensity)
+  BTRIP_COEFFICIENTS = {
+    male: 1.92,
+    female: 1.67
   }.freeze
 
   def initialize(duration_minutes, avg_heart_rate, max_heart_rate, resting_heart_rate, gender = :male)
@@ -26,6 +36,18 @@ class TRIMPCalculator
     
     trimp = @duration * intensity_factor * gender_factor
     trimp.round(2)
+  end
+
+  # Calculate bTRIMP (Bannister's TRIMP)
+  # Uses exponential model: Duration × Intensity × e^(k × Intensity)
+  # Gives more weight to higher intensity efforts compared to linear TRIMP
+  def calculate_btrip
+    intensity_factor = (@avg_hr - @resting_hr).to_f / (@max_hr - @resting_hr)
+    coefficient = BTRIP_COEFFICIENTS[@gender]
+    
+    # bTRIMP = Duration × Intensity × e^(k × Intensity)
+    btrip = @duration * intensity_factor * Math.exp(coefficient * intensity_factor)
+    btrip.round(2)
   end
 
   # Classifies a TRIMP value into a training intensity range
@@ -48,6 +70,25 @@ class TRIMPCalculator
     end
   end
 
+  # Classifies a bTRIMP value into a training intensity range
+  # bTRIMP values are typically higher than linear TRIMP due to exponential weighting
+  def self.classify_btrip(btrip_value)
+    case btrip_value
+    when 0...250
+      { range: "< 250", interpretation: "Very light training week" }
+    when 250...500
+      { range: "250-500", interpretation: "Light training week" }
+    when 500...900
+      { range: "500-900", interpretation: "Moderate training week" }
+    when 900...1500
+      { range: "900-1500", interpretation: "Hard training week" }
+    when 1500...2000
+      { range: "1500-2000", interpretation: "Very hard training week" }
+    else
+      { range: "> 2000", interpretation: "Extreme training week (recovery needed)" }
+    end
+  end
+
   # Classifies a TRIMP value into a training phase
   # Returns a hash with :phase, :range, and :description
   # Can be used as a class method: TRIMPCalculator.classify_training_phase(value)
@@ -61,6 +102,20 @@ class TRIMPCalculator
       { phase: "Build phase", range: "500-750", description: "Increased intensity and volume" }
     else
       { phase: "Peak phase", range: "750-1000+", description: "High intensity" }
+    end
+  end
+
+  # Classifies a bTRIMP value into a training phase
+  def self.classify_btrip_phase(btrip_value)
+    case btrip_value
+    when 0...500
+      { phase: "Recovery phase", range: "< 500", description: "Deliberate rest weeks" }
+    when 500...900
+      { phase: "Base phase", range: "500-900", description: "Steady, consistent training" }
+    when 900...1500
+      { phase: "Build phase", range: "900-1500", description: "Increased intensity and volume" }
+    else
+      { phase: "Peak phase", range: "1500+", description: "High intensity" }
     end
   end
 
@@ -79,7 +134,7 @@ end
 
 # Example usage
 if __FILE__ == $0
-  puts "=== TRIMP Calculator ==="
+  puts "=== TRIMP & bTRIMP Calculator ==="
   puts
   
   # Example 1: Male athlete
@@ -91,7 +146,9 @@ if __FILE__ == $0
   
   calculator = TRIMPCalculator.new(duration, avg_hr, max_hr, resting_hr, gender)
   trimp = calculator.calculate
+  btrip = calculator.calculate_btrip
   classification = TRIMPCalculator.classify_trimp(trimp)
+  btrip_classification = TRIMPCalculator.classify_btrip(btrip)
   
   puts "Example 1 (Male):"
   puts "  Duration: #{duration} minutes"
@@ -100,14 +157,17 @@ if __FILE__ == $0
   puts "  Resting HR: #{resting_hr} bpm"
   puts "  Gender: #{gender}"
   puts "  TRIMP Score: #{trimp}"
-  puts "  Range: #{classification[:range]}"
-  puts "  Interpretation: #{classification[:interpretation]}"
+  puts "  bTRIMP Score: #{btrip}"
+  puts "  TRIMP Range: #{classification[:range]} - #{classification[:interpretation]}"
+  puts "  bTRIMP Range: #{btrip_classification[:range]} - #{btrip_classification[:interpretation]}"
   puts
   
   # Example 2: Female athlete
   calculator2 = TRIMPCalculator.new(45, 140, 195, 58, :female)
   trimp2 = calculator2.calculate
+  btrip2 = calculator2.calculate_btrip
   classification2 = TRIMPCalculator.classify_trimp(trimp2)
+  btrip_classification2 = TRIMPCalculator.classify_btrip(btrip2)
   
   puts "Example 2 (Female):"
   puts "  Duration: 45 minutes"
@@ -116,15 +176,19 @@ if __FILE__ == $0
   puts "  Resting HR: 58 bpm"
   puts "  Gender: female"
   puts "  TRIMP Score: #{trimp2}"
-  puts "  Range: #{classification2[:range]}"
-  puts "  Interpretation: #{classification2[:interpretation]}"
+  puts "  bTRIMP Score: #{btrip2}"
+  puts "  TRIMP Range: #{classification2[:range]} - #{classification2[:interpretation]}"
+  puts "  bTRIMP Range: #{btrip_classification2[:range]} - #{btrip_classification2[:interpretation]}"
   puts
   
-  # Example 3: Testing with different TRIMP values
-  puts "Example 3 (Range Classification for various TRIMP values):"
-  test_values = [100, 200, 400, 600, 850, 1200]
-  test_values.each do |value|
-    classification = TRIMPCalculator.classify_trimp(value)
-    puts "  TRIMP #{value}: #{classification[:interpretation]}"
+  # Example 3: Comparing TRIMP vs bTRIMP at different intensities
+  puts "Example 3 (TRIMP vs bTRIMP comparison for 60 min at various intensities):"
+  test_hr_values = [120, 140, 160, 180]
+  test_hr_values.each do |avg_hr_test|
+    calc = TRIMPCalculator.new(60, avg_hr_test, 200, 60, :male)
+    trimp_val = calc.calculate
+    btrip_val = calc.calculate_btrip
+    intensity = ((avg_hr_test - 60).to_f / (200 - 60) * 100).round(1)
+    puts "  #{intensity}% intensity (#{avg_hr_test} bpm): TRIMP=#{trimp_val}, bTRIMP=#{btrip_val}"
   end
 end
