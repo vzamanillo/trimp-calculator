@@ -49,7 +49,7 @@ class TRIMPCalculator
   # Calculate bTRIMP (Bannister's TRIMP)
   # Uses exponential model: Duration × Intensity × e^(k × Intensity)
   # Gives more weight to higher intensity efforts compared to linear TRIMP
-  def calculate_btrip
+  def calculate_btrimp
     intensity_factor = (@avg_hr - @resting_hr).to_f / (@max_hr - @resting_hr)
     coefficient = BTRIP_COEFFICIENTS[@gender]
     
@@ -66,7 +66,7 @@ class TRIMPCalculator
   # Z3: 70-80% (multiplier: 3)
   # Z4: 80-90% (multiplier: 4)
   # Z5: 90-100% (multiplier: 5)
-  def calculate_etrip
+  def calculate_etrimp
     # Calculate HR as % of max HR
     hr_percent = (@avg_hr.to_f / @max_hr) * 100
     
@@ -93,7 +93,7 @@ class TRIMPCalculator
   # Calculate eTRIMP with detailed zone breakdown (for mixed-zone workouts)
   # Accepts a hash of zone distributions: { z1: 10, z2: 20, z3: 15, z4: 10, z5: 5 }
   # where keys are zone names and values are minutes in each zone
-  def calculate_etrip_detailed(zone_minutes)
+  def calculate_etrimp_detailed(zone_minutes)
     total_etrip = 0
     zone_multipliers = { z1: 1, z2: 2, z3: 3, z4: 4, z5: 5 }
     
@@ -127,7 +127,7 @@ class TRIMPCalculator
 
   # Classifies a bTRIMP value into a training intensity range
   # bTRIMP values are typically higher than linear TRIMP due to exponential weighting
-  def self.classify_btrip(btrip_value)
+  def self.classify_btrimp(btrip_value)
     case btrip_value
     when 0...250
       { range: "< 250", interpretation: "Very light training week" }
@@ -146,7 +146,7 @@ class TRIMPCalculator
 
   # Classifies an eTRIMP value into a training intensity range
   # eTRIMP scales differently based on zone distribution
-  def self.classify_etrip(etrip_value)
+  def self.classify_etrimp(etrip_value)
     case etrip_value
     when 0...50
       { range: "< 50", interpretation: "Very light training week" }
@@ -180,7 +180,7 @@ class TRIMPCalculator
   end
 
   # Classifies a bTRIMP value into a training phase
-  def self.classify_btrip_phase(btrip_value)
+  def self.classify_btrimp_phase(btrip_value)
     case btrip_value
     when 0...500
       { phase: "Recovery phase", range: "< 500", description: "Deliberate rest weeks" }
@@ -194,7 +194,7 @@ class TRIMPCalculator
   end
 
   # Classifies an eTRIMP value into a training phase
-  def self.classify_etrip_phase(etrip_value)
+  def self.classify_etrimp_phase(etrip_value)
     case etrip_value
     when 0...100
       { phase: "Recovery phase", range: "< 100", description: "Deliberate rest weeks" }
@@ -260,13 +260,13 @@ if __FILE__ == $0
   
   calculator = TRIMPCalculator.new(duration, avg_hr, max_hr, resting_hr, gender)
   trimp = calculator.calculate
-  btrip = calculator.calculate_btrip
-  etrip = calculator.calculate_etrip
+  btrip = calculator.calculate_btrimp
+  etrip = calculator.calculate_etrimp
   zone_info = calculator.get_zone_info
   
   classification = TRIMPCalculator.classify_trimp(trimp)
-  btrip_classification = TRIMPCalculator.classify_btrip(btrip)
-  etrip_classification = TRIMPCalculator.classify_etrip(etrip)
+  btrip_classification = TRIMPCalculator.classify_btrimp(btrip)
+  etrip_classification = TRIMPCalculator.classify_etrimp(etrip)
   
   puts "Example 1 (Male - 60 min @ 150 bpm):"
   puts "  Duration: #{duration} minutes"
@@ -283,13 +283,13 @@ if __FILE__ == $0
   # Example 2: Female athlete
   calculator2 = TRIMPCalculator.new(45, 140, 195, 58, :female)
   trimp2 = calculator2.calculate
-  btrip2 = calculator2.calculate_btrip
-  etrip2 = calculator2.calculate_etrip
+  btrip2 = calculator2.calculate_btrimp
+  etrip2 = calculator2.calculate_etrimp
   zone_info2 = calculator2.get_zone_info
   
   classification2 = TRIMPCalculator.classify_trimp(trimp2)
-  btrip_classification2 = TRIMPCalculator.classify_btrip(btrip2)
-  etrip_classification2 = TRIMPCalculator.classify_etrip(etrip2)
+  btrip_classification2 = TRIMPCalculator.classify_btrimp(btrip2)
+  etrip_classification2 = TRIMPCalculator.classify_etrimp(etrip2)
   
   puts "Example 2 (Female - 45 min @ 140 bpm):"
   puts "  Duration: 45 minutes"
@@ -311,8 +311,8 @@ if __FILE__ == $0
   test_hr_values.each do |avg_hr_test|
     calc = TRIMPCalculator.new(60, avg_hr_test, 200, 60, :male)
     trimp_val = calc.calculate
-    btrip_val = calc.calculate_btrip
-    etrip_val = calc.calculate_etrip
+    btrip_val = calc.calculate_btrimp
+    etrip_val = calc.calculate_etrimp
     zone_info_test = calc.get_zone_info
     intensity = ((avg_hr_test - 60).to_f / (200 - 60) * 100).round(1)
     puts "  #{intensity}%        | Z#{zone_info_test[:zone]}    | #{trimp_val.to_s.rjust(6)} | #{btrip_val.to_s.rjust(6)} | #{etrip_val.to_s.rjust(6)}"
@@ -329,7 +329,7 @@ if __FILE__ == $0
   end
   
   calc_detailed = TRIMPCalculator.new(90, 150, 200, 60, :male)
-  etrip_detailed = calc_detailed.calculate_etrip_detailed(zone_distribution)
-  etrip_class = TRIMPCalculator.classify_etrip(etrip_detailed)
+  etrip_detailed = calc_detailed.calculate_etrimp_detailed(zone_distribution)
+  etrip_class = TRIMPCalculator.classify_etrimp(etrip_detailed)
   puts "  Total eTRIMP: #{etrip_detailed} - #{etrip_class[:interpretation]}"
 end
