@@ -180,7 +180,7 @@ class TRIMPCalculator
   end
 
   # Classifies a bTRIMP value into a training phase
-  def self.classify_btrimp_phase(btrip_value)
+  def self.classify_training_phase_btrimp(btrip_value)
     case btrip_value
     when 0...500
       { phase: "Recovery phase", range: "< 500", description: "Deliberate rest weeks" }
@@ -194,7 +194,7 @@ class TRIMPCalculator
   end
 
   # Classifies an eTRIMP value into a training phase
-  def self.classify_etrimp_phase(etrip_value)
+  def self.classify_training_phase_etrimp(etrip_value)
     case etrip_value
     when 0...100
       { phase: "Recovery phase", range: "< 100", description: "Deliberate rest weeks" }
