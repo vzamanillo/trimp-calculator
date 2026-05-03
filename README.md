@@ -102,7 +102,7 @@ A heart-rate based training stress metric specifically optimized for running (an
 
 **Formula:**
 ```
-TSS = (Duration (minutes) × Intensity Factor²) / 100
+TSS = (Duration (minutes) × Intensity Factor²)
 
 Where:
 - Intensity Factor = Average HR / Lactate Threshold HR (LTHR)
@@ -479,7 +479,7 @@ puts "Recommendation: #{weekly_classification[:recommendation]}"
 | **Linear TRIMP** | 56.25 | Moderate training |
 | **bTRIMP** | 142.67 | Moderate training |
 | **eTRIMP** | 180 | Moderate training |
-| **Running TSS** | 56.25 | Moderate workout |
+| **Running TSS** | 52.79 | Moderate workout |
 
 ---
 

@@ -16,10 +16,11 @@ lthr = 156.4 # LTHR para el corredor 85% de 184 bpm
 weekly_tss = 0
 
 workouts.each do |workout|
-  calc = RunningTSSCalculator.new(workout[:duration], workout[:avg_hr], lthr, :male)
+  calc = RunningTSSCalculator.new(workout[:duration], workout[:avg_hr], lthr)
   tss = calc.calculate_tss
   weekly_tss += tss
   puts "  #{workout[:name]}: TSS = #{tss}"
+  # puts calc.get_workout_analysis
 end
 
 puts "  ---"

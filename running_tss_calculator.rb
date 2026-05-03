@@ -10,21 +10,19 @@
 # similar to how cyclists use power-based TSS calculations
 
 class RunningTSSCalculator
-  def initialize(duration_minutes, avg_heart_rate, lactate_threshold_hr, gender = :male)
+  def initialize(duration_minutes, avg_heart_rate, lactate_threshold_hr)
     @duration = duration_minutes
     @avg_hr = avg_heart_rate
     @lthr = lactate_threshold_hr
-    @gender = gender.downcase.to_sym
     
     validate_inputs
   end
 
   # Calculate TSS (Training Stress Score)
-  # Formula: TSS = (Duration × Intensity Factor²) / 100
+  # Formula: TSS = (Duration × Intensity Factor²)
   # where Intensity Factor = Average HR / LTHR
   def calculate_tss
-    intensity_factor = @avg_hr.to_f / @lthr
-    tss = (@duration * (intensity_factor ** 2)) / 100
+    tss = @duration * (intensity_factor ** 2)
     tss.round(2)
   end
 
@@ -124,7 +122,6 @@ class RunningTSSCalculator
   # Get detailed workout analysis
   def get_workout_analysis
     tss = calculate_tss
-    intensity_factor = intensity_factor
     classification = self.class.classify_tss_workout(tss)
     zone_info = get_hr_zone_info
     
@@ -146,7 +143,6 @@ class RunningTSSCalculator
     raise ArgumentError, "Average HR must be positive" if @avg_hr <= 0
     raise ArgumentError, "Lactate Threshold HR must be positive" if @lthr <= 0
     raise ArgumentError, "Average HR must be less than or equal to LTHR for sustainable effort. For max efforts > LTHR, use 1.0+ intensity factor." if @avg_hr > @lthr * 1.2
-    raise ArgumentError, "Invalid gender. Use :male or :female" unless [:male, :female].include?(@gender)
   end
 end
 
@@ -157,7 +153,7 @@ if __FILE__ == $0
   
   # Example 1: Easy recovery run
   puts "Example 1: Easy Recovery Run"
-  calc1 = RunningTSSCalculator.new(30, 130, 160, :male)
+  calc1 = RunningTSSCalculator.new(30, 130, 160)
   analysis1 = calc1.get_workout_analysis
   
   puts "  Duration: #{analysis1[:duration]} minutes"
@@ -171,7 +167,7 @@ if __FILE__ == $0
   
   # Example 2: Moderate tempo run
   puts "Example 2: Tempo Run (Sustained Effort)"
-  calc2 = RunningTSSCalculator.new(40, 155, 160, :male)
+  calc2 = RunningTSSCalculator.new(40, 155, 160)
   analysis2 = calc2.get_workout_analysis
   
   puts "  Duration: #{analysis2[:duration]} minutes"
@@ -185,7 +181,7 @@ if __FILE__ == $0
   
   # Example 3: Hard interval session
   puts "Example 3: Hard Interval Session"
-  calc3 = RunningTSSCalculator.new(50, 170, 160, :male)
+  calc3 = RunningTSSCalculator.new(50, 170, 160)
   analysis3 = calc3.get_workout_analysis
   
   puts "  Duration: #{analysis3[:duration]} minutes"
@@ -212,7 +208,7 @@ if __FILE__ == $0
   weekly_tss = 0
   
   workouts.each do |workout|
-    calc = RunningTSSCalculator.new(workout[:duration], workout[:avg_hr], lthr, :male)
+    calc = RunningTSSCalculator.new(workout[:duration], workout[:avg_hr], lthr)
     tss = calc.calculate_tss
     weekly_tss += tss
     puts "  #{workout[:name]}: TSS = #{tss}"
