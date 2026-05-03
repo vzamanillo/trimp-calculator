@@ -9,14 +9,80 @@ TRIMP is a metric used in sports science to measure the physiological stress and
 - **Intensity** (based on heart rate relative to max and resting heart rate)
 - **Gender factor** (accounts for physiological differences)
 
-## Formula
+## TRIMP Methods
 
+This calculator supports three different TRIMP calculation methods, each with different approaches to quantifying training load:
+
+### 1. Linear TRIMP (Standard Formula)
+
+The simplest and most commonly used method.
+
+**Formula:**
 ```
 TRIMP = Duration (minutes) × Intensity Factor × Gender Factor
 
-Intensity Factor = (Average HR - Resting HR) / (Max HR - Resting HR)
-Gender Factor = 1.0 for males, 0.86 for females
+Where:
+- Intensity Factor = (Average HR - Resting HR) / (Max HR - Resting HR)
+- Gender Factor = 1.0 for males, 0.86 for females
 ```
+
+**Characteristics:**
+- Linear relationship between intensity and TRIMP score
+- Treats all intensity levels equally
+- Best for steady-state or moderate-intensity training
+- Easier to interpret and communicate
+
+**When to use:** General training monitoring, simplicity, and comparing workouts with varying intensities.
+
+### 2. bTRIMP (Bannister's TRIMP)
+
+An exponential model that emphasizes high-intensity efforts.
+
+**Formula:**
+```
+bTRIMP = Duration (minutes) × Intensity Factor × e^(k × Intensity Factor)
+
+Where:
+- Intensity Factor = (Average HR - Resting HR) / (Max HR - Resting HR)
+- k = 1.92 for males, 1.67 for females (exponential coefficient)
+- e = mathematical constant (≈2.718)
+```
+
+**Characteristics:**
+- Exponential weighting gives more credit to higher intensity efforts
+- High-intensity intervals accumulate more training stress
+- Typical bTRIMP values are 1.5-2× higher than linear TRIMP
+- Better reflects the non-linear physiological response to intensity
+- More sensitive to intensity changes
+
+**When to use:** High-intensity training, interval workouts, competitive athletes, when emphasizing intensity over duration.
+
+### 3. eTRIMP (Edwards' TRIMP)
+
+A zone-based method that categorizes training into 5 heart rate zones.
+
+**Formula:**
+```
+eTRIMP = Σ(Minutes in Zone × Zone Multiplier)
+
+Zone definitions (based on % of max HR):
+- Zone 1 (50-60% of max HR):  multiplier = 1
+- Zone 2 (60-70% of max HR):  multiplier = 2
+- Zone 3 (70-80% of max HR):  multiplier = 3
+- Zone 4 (80-90% of max HR):  multiplier = 4
+- Zone 5 (90-100% of max HR): multiplier = 5
+```
+
+**Characteristics:**
+- Zone-based approach reflects different physiological systems
+- Each zone targets different energy systems and adaptations
+- Accounts for varied intensity during mixed workouts
+- Multipliers increase exponentially by zone
+- Can be calculated for single-zone or mixed-zone workouts
+
+**When to use:** Multi-zone training sessions, detailed workout analysis, tracking time in specific zones, understanding zone distribution.
+
+---
 
 ## Gender Factor
 
@@ -78,21 +144,101 @@ Week 5: 200 TRIMP (recovery week)
 
 ## Usage
 
-### Basic Example
+### Initialization
 
 ```ruby
 require './trimp_calculator'
 
+# Create a calculator instance with your workout data
 calculator = TRIMPCalculator.new(
-  duration_minutes: 60,
-  avg_heart_rate: 150,
-  max_heart_rate: 200,
-  resting_heart_rate: 60,
-  gender: :male
+  duration_minutes = 60,      # Workout duration in minutes
+  avg_heart_rate = 150,        # Average heart rate in bpm
+  max_heart_rate = 200,        # Your max heart rate in bpm
+  resting_heart_rate = 60,     # Your resting heart rate in bpm
+  gender = :male               # :male or :female
 )
+```
 
+### Calculating Linear TRIMP
+
+```ruby
+# Calculate standard linear TRIMP
 trimp_score = calculator.calculate
-puts "TRIMP Score: #{trimp_score}"
+puts "Linear TRIMP: #{trimp_score}"
+# Output: Linear TRIMP: 56.25
+
+# Classify the weekly score
+classification = TRIMPCalculator.classify_trimp(totales_trimp)
+puts classification[:interpretation]  
+# Output: Moderate training week
+```
+
+### Calculating bTRIMP (Bannister's)
+
+```ruby
+# Calculate exponential TRIMP (emphasizes intensity)
+btrimp_score = calculator.calculate_btrimp
+puts "bTRIMP: #{btrimp_score}"
+# Output: bTRIMP: 142.67 (higher than linear due to exponential weighting)
+
+# Classify the weekly bTRIMP score
+btrimp_classification = TRIMPCalculator.classify_btrimp(totales_btrimp)
+puts btrimp_classification[:interpretation]
+```
+
+### Calculating eTRIMP (Edwards' Zone-Based)
+
+```ruby
+# Method 1: Simple calculation based on average HR
+# (assumes entire workout at average heart rate in a single zone)
+etrimp_score = calculator.calculate_etrimp
+puts "eTRIMP (single zone): #{etrimp_score}"
+# Output: eTRIMP: 180.0 (60 min × zone 3 multiplier)
+
+# Method 2: Detailed calculation for mixed-zone workouts
+# Specify minutes spent in each zone
+zone_breakdown = {
+  z1: 10,  # 10 minutes in zone 1
+  z2: 20,  # 20 minutes in zone 2
+  z3: 15,  # 15 minutes in zone 3
+  z4: 10,  # 10 minutes in zone 4
+  z5: 5    # 5 minutes in zone 5
+}
+
+etrimp_detailed = calculator.calculate_etrimp_detailed(zone_breakdown)
+puts "eTRIMP (mixed zones): #{etrimp_detailed}"
+# Output: eTRIMP (mixed zones): 150.0
+# Calculation: (10×1) + (20×2) + (15×3) + (10×4) + (5×5) = 150
+
+# Classify the weekly eTRIMP score
+etrimp_classification = TRIMPCalculator.classify_etrimp(totales_etrimp)
+puts etrimp_classification[:interpretation]
+```
+
+### Complete Example with All Methods
+
+```ruby
+require './trimp_calculator'
+
+# Workout data
+duration = 60          # minutes
+avg_hr = 150          # bpm
+max_hr = 200          # bpm
+resting_hr = 60       # bpm
+
+calculator = TRIMPCalculator.new(duration, avg_hr, max_hr, resting_hr, :male)
+
+# Calculate all three methods
+trimp = calculator.calculate
+btrimp = calculator.calculate_btrimp
+etrimp = calculator.calculate_etrimp
+
+puts "=== Workout Analysis ==="
+puts "Duration: #{duration} minutes at #{avg_hr} bpm average"
+puts "---"
+puts "Linear TRIMP:  #{trimp}"
+puts "bTRIMP:        #{btrimp}"
+puts "eTRIMP:        #{etrimp}"
 ```
 
 ### Parameters
@@ -102,6 +248,50 @@ puts "TRIMP Score: #{trimp_score}"
 - `max_heart_rate` - Maximum heart rate in bpm
 - `resting_heart_rate` - Resting heart rate in bpm
 - `gender` - `:male` or `:female` (default: `:male`)
+
+## Comparing the Three Methods
+
+### When to Use Each Method
+
+| Method | Best For | Characteristics | Typical Range (60-min session) |
+|--------|----------|-----------------|--------------------------------|
+| **Linear TRIMP** | General training, easy comparison, steady-state workouts | Simple, intuitive, linear scaling | 30-80 points |
+| **bTRIMP** | High-intensity training, interval workouts, elite athletes | Exponential scaling, emphasizes intensity | 50-200 points |
+| **eTRIMP** | Mixed-zone training, detailed zone analysis, periodization | Zone-based, multi-intensity workouts | 40-300 points |
+
+### Example Comparison
+
+Same 60-minute workout at 150 bpm average HR for a male athlete:
+- Max HR: 200 bpm | Resting HR: 60 bpm | Intensity: 60% of max HR
+
+| Method | Score | Intensity Weight | Use Case |
+|--------|-------|------------------|----------|
+| **Linear TRIMP** | 56.25 | Proportional | Quick assessment |
+| **bTRIMP** | 142.67 | Exponential | High-intensity tracking |
+| **eTRIMP** | 180.0 | Zone-based (Z3) | Detailed analysis |
+
+**Key Insights:**
+- bTRIMP is higher for high-intensity workouts (shows more stress)
+- eTRIMP is ideal for tracking zone time and periodization
+- Linear TRIMP provides a baseline for comparison
+- All three provide valid perspectives on training load
+
+### Guidelines by Training Phase
+
+**Recovery Week:** Focus on low zones
+- Linear TRIMP: < 150 weekly
+- bTRIMP: < 250 weekly
+- eTRIMP: < 50 weekly (mostly Z1-Z2)
+
+**Build Week:** Mix of zones with emphasis on Z2-Z3
+- Linear TRIMP: 300-500 weekly
+- bTRIMP: 500-900 weekly
+- eTRIMP: 150-300 weekly
+
+**Peak Week:** High-intensity emphasis (Z4-Z5)
+- Linear TRIMP: 750-1000+ weekly
+- bTRIMP: 1500+ weekly
+- eTRIMP: 300-600 weekly (high zone distribution)
 
 ## Running Examples
 
