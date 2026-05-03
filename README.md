@@ -101,9 +101,9 @@ For the same 60-minute workout at 150 bpm average HR:
 
 ## Weekly TRIMP Guidelines
 
-### General Interpretation
+### Linear TRIMP (Standard Method)
 
-| Weekly TRIMP | Interpretation |
+| Weekly Score | Interpretation |
 |---|---|
 | < 150 | Very light training week |
 | 150-300 | Light training week |
@@ -112,35 +112,88 @@ For the same 60-minute workout at 150 bpm average HR:
 | 750-1000 | Very hard training week |
 | > 1000 | Extreme training week (recovery needed) |
 
-### Training Phase Guidelines
-
+**Training Phase Guidelines:**
 - **Base phase**: 300-500 (steady, consistent training)
 - **Build phase**: 500-750 (increased intensity and volume)
 - **Peak phase**: 750-1000+ (high intensity)
 - **Recovery phase**: < 300 (deliberate rest weeks)
 
-### Sport-Specific Ranges
-
+**Sport-Specific Ranges:**
 - **Endurance athletes** (cycling, running): 800-1500+/week
 - **Team sports**: 300-600/week
 - **General fitness**: 200-400/week
 
-### Key Principles
+### bTRIMP (Bannister's Method)
+
+| Weekly Score | Interpretation |
+|---|---|
+| < 250 | Very light training week |
+| 250-500 | Light training week |
+| 500-900 | Moderate training week |
+| 900-1500 | Hard training week |
+| 1500-2000 | Very hard training week |
+| > 2000 | Extreme training week (recovery needed) |
+
+**Training Phase Guidelines:**
+- **Base phase**: 500-900 (steady, consistent training)
+- **Build phase**: 900-1500 (increased intensity and volume)
+- **Peak phase**: 1500-2000+ (high intensity)
+- **Recovery phase**: < 500 (deliberate rest weeks)
+
+**Note:** bTRIMP values are typically 1.5-2× higher than linear TRIMP due to exponential weighting of intensity. Use these ranges when tracking high-intensity training and interval workouts.
+
+### eTRIMP (Edwards' Zone-Based Method)
+
+| Weekly Score | Interpretation |
+|---|---|
+| < 50 | Very light training week |
+| 50-150 | Light training week |
+| 150-300 | Moderate training week |
+| 300-450 | Hard training week |
+| 450-600 | Very hard training week |
+| > 600 | Extreme training week (recovery needed) |
+
+**Training Phase Guidelines:**
+- **Base phase**: 150-300 (mostly Z1-Z2, steady-state)
+- **Build phase**: 300-450 (mix of Z2-Z3, some Z4 work)
+- **Peak phase**: 450-600+ (emphasis on Z4-Z5, high intensity)
+- **Recovery phase**: < 100 (mostly Z1, deliberate easy weeks)
+
+**Zone Distribution Tips:**
+- **Recovery weeks**: 80% Z1, 20% Z2
+- **Base weeks**: 60% Z2, 30% Z3, 10% higher zones
+- **Build weeks**: 40% Z2, 35% Z3, 15% Z4, 10% Z5
+- **Peak weeks**: 30% Z3, 30% Z4, 25% Z5, 15% Z1-Z2
+
+### Key Principles (All Methods)
 
 - **Progression**: Gradually increase weekly TRIMP over time
 - **Variation**: Alternate hard and easy weeks
 - **Sustainability**: Your TRIMP should be maintainable without burnout
 - **Individual Response**: Track how you feel at different TRIMP levels
+- **Method Consistency**: Pick one or combine methods for comprehensive analysis
 
-### Example Weekly Periodization
+### Example Weekly Periodization (All Methods)
 
-```
-Week 1: 250 TRIMP (recovery)
-Week 2: 450 TRIMP (build)
-Week 3: 600 TRIMP (hard)
-Week 4: 800 TRIMP (peak)
-Week 5: 200 TRIMP (recovery week)
-```
+**Recovery Week:**
+- Linear TRIMP: 250
+- bTRIMP: 400
+- eTRIMP: 80
+
+**Build Week:**
+- Linear TRIMP: 450
+- bTRIMP: 750
+- eTRIMP: 220
+
+**Hard Week:**
+- Linear TRIMP: 600
+- bTRIMP: 1100
+- eTRIMP: 350
+
+**Peak Week:**
+- Linear TRIMP: 800
+- bTRIMP: 1600
+- eTRIMP: 480
 
 ## Usage
 
